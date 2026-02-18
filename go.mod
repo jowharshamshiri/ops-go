@@ -1,6 +1,6 @@
 module github.com/filegrind/ops-go
 
-// version: 0.7.5512
+// version: 0.8.5530
 
 go 1.21
 
