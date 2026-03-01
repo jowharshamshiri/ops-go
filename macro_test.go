@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	ops "github.com/filegrind/ops-go"
+	ops "github.com/machinefabric/ops-go"
 )
 
 // macroTestService is used in macro tests.

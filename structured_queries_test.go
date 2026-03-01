@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	ops "github.com/filegrind/ops-go"
+	ops "github.com/machinefabric/ops-go"
 )
 
 // TEST024: Build a flat ListingOutline with depth-0 entries and verify max_depth, levels, and flatten count

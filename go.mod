@@ -1,6 +1,6 @@
-module github.com/filegrind/ops-go
+module github.com/machinefabric/ops-go
 
-// version: 0.9.5535
+// version: 0.10.5541
 
 go 1.21
 

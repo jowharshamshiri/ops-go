@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	ops "github.com/filegrind/ops-go"
+	ops "github.com/machinefabric/ops-go"
 )
 
 // TEST104: Verify OpError::ExecutionFailed displays with the correct message format

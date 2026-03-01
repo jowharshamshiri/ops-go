@@ -3,7 +3,7 @@ package ops_test
 import (
 	"testing"
 
-	ops "github.com/filegrind/ops-go"
+	ops "github.com/machinefabric/ops-go"
 )
 
 // Concrete test op used across TEST001-TEST004

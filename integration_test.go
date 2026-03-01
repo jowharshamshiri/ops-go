@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	ops "github.com/filegrind/ops-go"
+	ops "github.com/machinefabric/ops-go"
 )
 
 // integrationFailingOp always fails.

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	ops "github.com/filegrind/ops-go"
+	ops "github.com/machinefabric/ops-go"
 )
 
 // slowOpTimeout sleeps 50ms then succeeds.

@@ -1,4 +1,4 @@
-module github.com/filegrind/ops-go
+module github.com/machinefabric/ops-go
 
 // version: {{ project.version }}
 

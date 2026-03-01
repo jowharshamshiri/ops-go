@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	ops "github.com/filegrind/ops-go"
+	ops "github.com/machinefabric/ops-go"
 )
 
 // producerOp has an input schema requiring "initial_input" and an output schema with "produced_value".

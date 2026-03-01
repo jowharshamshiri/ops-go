@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	ops "github.com/filegrind/ops-go"
+	ops "github.com/machinefabric/ops-go"
 )
 
 // TEST021: Build OpMetadata with name, description, and schemas and verify all fields are populated
