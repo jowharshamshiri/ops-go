@@ -3,7 +3,7 @@ package ops_test
 import (
 	"testing"
 
-	ops "github.com/machinefabric/ops-go"
+	ops "github.com/jowharshamshiri/ops-go"
 )
 
 // abortTestOp can be configured to abort with or without a reason.

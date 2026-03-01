@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	ops "github.com/machinefabric/ops-go"
+	ops "github.com/jowharshamshiri/ops-go"
 )
 
 // loopTestOpInt returns a fixed value each iteration.

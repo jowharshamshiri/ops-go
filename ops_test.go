@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	ops "github.com/machinefabric/ops-go"
+	ops "github.com/jowharshamshiri/ops-go"
 )
 
 // TEST005: Confirm the Perform() utility wraps an op with automatic logging and returns its result

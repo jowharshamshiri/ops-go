@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	ops "github.com/machinefabric/ops-go"
+	ops "github.com/jowharshamshiri/ops-go"
 )
 
 // validationTestOutput is the structured output for validating wrapper tests.

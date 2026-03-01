@@ -1,4 +1,4 @@
-module github.com/machinefabric/ops-go
+module github.com/jowharshamshiri/ops-go
 
 // version: {{ project.version }}
 

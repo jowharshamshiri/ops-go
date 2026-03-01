@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	ops "github.com/machinefabric/ops-go"
+	ops "github.com/jowharshamshiri/ops-go"
 )
 
 // loggingTestOp returns a fixed int for logging wrapper tests.

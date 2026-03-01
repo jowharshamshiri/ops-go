@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	ops "github.com/machinefabric/ops-go"
+	ops "github.com/jowharshamshiri/ops-go"
 )
 
 // TEST009: Insert typed values into DryContext and verify get/contains work correctly

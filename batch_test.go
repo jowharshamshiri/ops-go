@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	ops "github.com/machinefabric/ops-go"
+	ops "github.com/jowharshamshiri/ops-go"
 )
 
 // batchTestOp is a configurable op for batch tests.
