@@ -10,9 +10,23 @@ const (
 	ErrTimeout         ErrorKind = "Timeout"
 	ErrContext         ErrorKind = "Context"
 	ErrBatchFailed     ErrorKind = "BatchFailed"
-	ErrAborted         ErrorKind = "Aborted"
-	ErrTrigger         ErrorKind = "Trigger"
-	ErrOther           ErrorKind = "Other"
+	// ErrWrappedClassified is a CLASSIFIED failure inside wrapping context
+	// (a batch child, a trigger-wrapped op, …) — the wrapper preserves the
+	// origin's failure identity instead of flattening it into prose.
+	// Message is the wrapping CHAIN for humans; Code/Class/Reason are the
+	// origin's, verbatim. (matches Rust OpError::WrappedClassified)
+	ErrWrappedClassified ErrorKind = "WrappedClassified"
+	ErrAborted           ErrorKind = "Aborted"
+	ErrTrigger           ErrorKind = "Trigger"
+	// ErrClassified is a failure carrying its FULL identity from the emit
+	// source: the machine-readable Code the origin error declares, the
+	// failure Class it declares (whose problem it is), and the leaf human
+	// Message. Wrapping layers construct ErrWrappedClassified from
+	// classified origins instead of folding everything into prose; the
+	// engine's run record and retry policy read it structurally.
+	// (matches Rust OpError::Classified)
+	ErrClassified ErrorKind = "Classified"
+	ErrOther      ErrorKind = "Other"
 )
 
 // OpError is the error type for all operations in the framework.
@@ -21,6 +35,14 @@ type OpError struct {
 	Message   string
 	TimeoutMs uint64 // only populated for ErrTimeout
 	Wrapped   error  // only populated for ErrOther
+	// Code, Class, and Reason carry the failure identity DECLARED at the
+	// emit source (docs/failure-taxonomy.md). Populated only for
+	// ErrClassified (Message is the leaf message; Reason equals Message)
+	// and ErrWrappedClassified (Message is the wrapping chain; Reason is
+	// the origin's leaf message).
+	Code   string
+	Class  FailureClass
+	Reason string
 }
 
 // Error implements the error interface.
@@ -39,6 +61,10 @@ func (e *OpError) Error() string {
 		return fmt.Sprintf("Op aborted: %s", e.Message)
 	case ErrTrigger:
 		return fmt.Sprintf("Trigger error: %s", e.Message)
+	case ErrWrappedClassified:
+		return e.Message
+	case ErrClassified:
+		return fmt.Sprintf("%s: %s", e.Code, e.Message)
 	default:
 		if e.Wrapped != nil {
 			return e.Wrapped.Error()
@@ -70,6 +96,56 @@ func NewContextError(msg string) *OpError {
 // NewBatchFailedError creates an ErrBatchFailed OpError.
 func NewBatchFailedError(msg string) *OpError {
 	return &OpError{Kind: ErrBatchFailed, Message: msg}
+}
+
+// NewClassifiedError creates an ErrClassified OpError carrying the failure
+// identity declared at the emit source (docs/failure-taxonomy.md).
+func NewClassifiedError(code string, class FailureClass, message string) *OpError {
+	return &OpError{Kind: ErrClassified, Code: code, Class: class, Message: message, Reason: message}
+}
+
+// NewWrappedClassifiedError creates an ErrWrappedClassified OpError: the
+// chain is the wrapping text for humans; code/class/reason are the origin's,
+// verbatim.
+func NewWrappedClassifiedError(chain string, code string, class FailureClass, reason string) *OpError {
+	return &OpError{Kind: ErrWrappedClassified, Code: code, Class: class, Message: chain, Reason: reason}
+}
+
+// FailureClassOf returns the failure class the error DECLARES. Classified
+// variants carry their origin's declaration; everything else is
+// FailureInternal — unclassified means "ours", never a guess
+// (docs/failure-taxonomy.md). (matches Rust OpError::failure_class)
+func (e *OpError) FailureClassOf() FailureClass {
+	switch e.Kind {
+	case ErrClassified, ErrWrappedClassified:
+		return e.Class
+	default:
+		return FailureInternal
+	}
+}
+
+// FailureCode returns the machine-readable code declared at the emit
+// source, or "" when the failure carried none.
+// (matches Rust OpError::failure_code)
+func (e *OpError) FailureCode() string {
+	switch e.Kind {
+	case ErrClassified, ErrWrappedClassified:
+		return e.Code
+	default:
+		return ""
+	}
+}
+
+// FailureReason returns the LEAF human reason — the origin's own message
+// for classified failures, the Error() text otherwise.
+// (matches Rust OpError::failure_reason)
+func (e *OpError) FailureReason() string {
+	switch e.Kind {
+	case ErrClassified, ErrWrappedClassified:
+		return e.Reason
+	default:
+		return e.Error()
+	}
 }
 
 // NewAbortedError creates an ErrAborted OpError.

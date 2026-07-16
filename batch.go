@@ -73,9 +73,16 @@ func (b *BatchOp[T]) Perform(dry *DryContext, wet *WetContext) ([]T, error) {
 				}{index, err})
 			} else {
 				b.rollbackSucceededOps(succeededOps, dry, wet)
-				return nil, NewBatchFailedError(fmt.Sprintf(
-					"Op %d-%s failed: %v", index, op.Metadata().Name, err,
-				))
+				// A classified child failure keeps its declared identity
+				// through the batch wrap (docs/failure-taxonomy.md) — the
+				// wrap enriches the human chain only.
+				chain := fmt.Sprintf("Op %d-%s failed: %v", index, op.Metadata().Name, err)
+				if opErr != nil && opErr.FailureCode() != "" {
+					return nil, NewWrappedClassifiedError(
+						chain, opErr.Code, opErr.FailureClassOf(), opErr.FailureReason(),
+					)
+				}
+				return nil, NewBatchFailedError(chain)
 			}
 		} else {
 			results = append(results, result)
