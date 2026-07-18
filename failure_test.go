@@ -37,7 +37,8 @@ func Test1731_only_input_is_permanent(t *testing.T) {
 // taxonomy's own rule (docs/failure-taxonomy.md).
 // (mirrors Rust ops/src/error.rs TEST1901)
 func Test1901_classified_accessors(t *testing.T) {
-	classified := NewClassifiedError("CONTEXT_OVERFLOW", FailureInput, "prompt too large")
+	classified := NewClassifiedError("CONTEXT_OVERFLOW", FailureInput, "prompt too large").
+		WithFailureArgURN("media:enc=utf-8;prompt")
 	if classified.FailureClassOf() != FailureInput {
 		t.Fatal("classified error must carry its declared class")
 	}
@@ -46,6 +47,9 @@ func Test1901_classified_accessors(t *testing.T) {
 	}
 	if classified.FailureReason() != "prompt too large" {
 		t.Fatal("classified error must carry its leaf reason")
+	}
+	if classified.FailureArgURN() != "media:enc=utf-8;prompt" {
+		t.Fatal("classified error must carry its declared argument attribution")
 	}
 	if classified.Error() != "CONTEXT_OVERFLOW: prompt too large" {
 		t.Fatalf("classified Display mismatch: %q", classified.Error())
@@ -57,6 +61,9 @@ func Test1901_classified_accessors(t *testing.T) {
 	)
 	if wrapped.FailureReason() != "prompt too large" {
 		t.Fatal("the reason is the LEAF message, not the wrap chain")
+	}
+	if wrapped.FailureArgURN() != "" {
+		t.Fatal("an unattributed classified error must remain unattributed")
 	}
 	if wrapped.Error() != "Op 3-generate failed: CONTEXT_OVERFLOW: prompt too large" {
 		t.Fatalf("wrapped Display keeps the human chain, got %q", wrapped.Error())
@@ -76,7 +83,8 @@ func Test1901_classified_accessors(t *testing.T) {
 // (docs/failure-taxonomy.md). (mirrors Rust ops/src/ops.rs TEST1903)
 func Test1903_wrap_preserves_classification(t *testing.T) {
 	wrapped := WrapNestedOpException("GenerateOp",
-		NewClassifiedError("CONTEXT_OVERFLOW", FailureInput, "prompt too large"))
+		NewClassifiedError("CONTEXT_OVERFLOW", FailureInput, "prompt too large").
+			WithFailureArgURN("media:enc=utf-8;prompt"))
 	opErr := AsOpError(wrapped)
 	if opErr == nil || opErr.Kind != ErrWrappedClassified {
 		t.Fatalf("expected WrappedClassified, got %+v", wrapped)
@@ -84,6 +92,9 @@ func Test1903_wrap_preserves_classification(t *testing.T) {
 	if opErr.FailureCode() != "CONTEXT_OVERFLOW" || opErr.FailureClassOf() != FailureInput ||
 		opErr.FailureReason() != "prompt too large" {
 		t.Fatalf("identity fields must survive the wrap: %+v", opErr)
+	}
+	if opErr.FailureArgURN() != "media:enc=utf-8;prompt" {
+		t.Fatal("argument attribution must survive the wrap")
 	}
 	if opErr.Error() == "prompt too large" {
 		t.Fatal("the chain must name the wrapping op")
@@ -96,5 +107,8 @@ func Test1903_wrap_preserves_classification(t *testing.T) {
 	if rewrapped.FailureCode() != "CONTEXT_OVERFLOW" || rewrapped.FailureClassOf() != FailureInput ||
 		rewrapped.FailureReason() != "prompt too large" {
 		t.Fatalf("identity fields must survive re-wrapping: %+v", rewrapped)
+	}
+	if rewrapped.FailureArgURN() != "media:enc=utf-8;prompt" {
+		t.Fatal("argument attribution must survive re-wrapping")
 	}
 }

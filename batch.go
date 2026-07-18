@@ -9,7 +9,7 @@ import (
 // BatchOp executes a sequence of ops. On failure, succeeded ops are rolled back in LIFO order.
 // BatchOp[T] implements Op[[]T].
 type BatchOp[T any] struct {
-	ops            []Op[T]
+	ops             []Op[T]
 	continueOnError bool
 }
 
@@ -78,9 +78,11 @@ func (b *BatchOp[T]) Perform(dry *DryContext, wet *WetContext) ([]T, error) {
 				// wrap enriches the human chain only.
 				chain := fmt.Sprintf("Op %d-%s failed: %v", index, op.Metadata().Name, err)
 				if opErr != nil && opErr.FailureCode() != "" {
-					return nil, NewWrappedClassifiedError(
+					wrapped := NewWrappedClassifiedError(
 						chain, opErr.Code, opErr.FailureClassOf(), opErr.FailureReason(),
 					)
+					wrapped.ArgURN = opErr.FailureArgURN()
+					return nil, wrapped
 				}
 				return nil, NewBatchFailedError(chain)
 			}

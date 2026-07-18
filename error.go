@@ -43,6 +43,9 @@ type OpError struct {
 	Code   string
 	Class  FailureClass
 	Reason string
+	// ArgURN is the media URN of the argument named by the emit source.
+	// Empty means the failure was not attributed to one argument.
+	ArgURN string
 }
 
 // Error implements the error interface.
@@ -111,6 +114,19 @@ func NewWrappedClassifiedError(chain string, code string, class FailureClass, re
 	return &OpError{Kind: ErrWrappedClassified, Code: code, Class: class, Message: chain, Reason: reason}
 }
 
+// WithFailureArgURN attributes a classified failure to one argument at its
+// emit source. Calling it for an unclassified error is a programmer error.
+func (e *OpError) WithFailureArgURN(argURN string) *OpError {
+	if e.Kind != ErrClassified && e.Kind != ErrWrappedClassified {
+		panic("WithFailureArgURN requires a classified OpError")
+	}
+	if argURN == "" {
+		panic("WithFailureArgURN requires a non-empty media URN")
+	}
+	e.ArgURN = argURN
+	return e
+}
+
 // FailureClassOf returns the failure class the error DECLARES. Classified
 // variants carry their origin's declaration; everything else is
 // FailureInternal — unclassified means "ours", never a guess
@@ -131,6 +147,17 @@ func (e *OpError) FailureCode() string {
 	switch e.Kind {
 	case ErrClassified, ErrWrappedClassified:
 		return e.Code
+	default:
+		return ""
+	}
+}
+
+// FailureArgURN returns the argument attribution declared at the emit source,
+// or "" when no single argument was named. Wrappers preserve it verbatim.
+func (e *OpError) FailureArgURN() string {
+	switch e.Kind {
+	case ErrClassified, ErrWrappedClassified:
+		return e.ArgURN
 	default:
 		return ""
 	}

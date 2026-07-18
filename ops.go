@@ -50,15 +50,19 @@ func WrapNestedOpException(triggerName string, err error) error {
 	// adds human context to the CHAIN, never touches class/code/reason
 	// (docs/failure-taxonomy.md).
 	case ErrWrappedClassified:
-		return NewWrappedClassifiedError(
+		wrapped := NewWrappedClassifiedError(
 			fmt.Sprintf("Batch op '%s' failed: %s", triggerName, opErr.Message),
 			opErr.Code, opErr.Class, opErr.Reason,
 		)
+		wrapped.ArgURN = opErr.ArgURN
+		return wrapped
 	case ErrClassified:
-		return NewWrappedClassifiedError(
+		wrapped := NewWrappedClassifiedError(
 			fmt.Sprintf("Op '%s' failed: %s: %s", triggerName, opErr.Code, opErr.Message),
 			opErr.Code, opErr.Class, opErr.Message,
 		)
+		wrapped.ArgURN = opErr.ArgURN
+		return wrapped
 	case ErrAborted:
 		return NewAbortedError(fmt.Sprintf("Op '%s' aborted: %s", triggerName, opErr.Message))
 	case ErrTrigger:
