@@ -129,7 +129,7 @@ This catalog lists all tests in the Go codebase.
 | test113 | `Test113_loop_op_break_terminates_loop` | TEST113: Run a LoopOp where an op sets the break flag and verify the loop terminates early | loop_op_test.go:522 |
 | test114 | `Test114_loop_op_continue_on_error_skips_failed_iterations` | TEST114: Run LoopOp with_continue_on_error where an op fails and verify the loop continues | loop_op_test.go:543 |
 | test115 | `Test115_loop_op_with_no_ops_produces_no_results` | TEST115: Run an empty LoopOp with a non-zero limit and verify it produces no results | loop_op_test.go:604 |
-| test1730 | `Test1730_failure_class_wire_tokens_round_trip` | TEST1730: the wire vocabulary round-trips exactly and rejects unknowns. (mirrors Rust ops/src/failure.rs TEST1730) | failure_test.go:7 |
+| test1730 | `Test1730_attribution_class_wire_tokens_round_trip` | TEST1730: the attribution-class wire vocabulary round-trips exactly and rejects unknowns. (mirrors Rust ops/src/failure.rs TEST1730) | failure_test.go:7 |
 | test1731 | `Test1731_only_input_is_permanent` | TEST1731: only Input is permanent — the retry machinery keys on this. (mirrors Rust ops/src/failure.rs TEST1731) | failure_test.go:24 |
 | test1901 | `Test1901_classified_accessors` | TEST1901: classified variants carry the emit source's identity through the accessors; unclassified variants are Internal with no code — the taxonomy's own rule (docs/failure-taxonomy.md). (mirrors Rust ops/src/error.rs TEST1901) | failure_test.go:39 |
 | test1903 | `Test1903_wrap_preserves_classification` | TEST1903: wrapping preserves a classified failure's identity — the wrap enriches the human CHAIN only, never the class/code/reason (docs/failure-taxonomy.md). (mirrors Rust ops/src/ops.rs TEST1903) | failure_test.go:77 |

@@ -4,17 +4,17 @@ import "testing"
 
 // TEST1730: the wire vocabulary round-trips exactly and rejects unknowns.
 // (mirrors Rust ops/src/failure.rs TEST1730)
-func Test1730_failure_class_wire_tokens_round_trip(t *testing.T) {
-	for _, class := range []FailureClass{FailureInput, FailureResource, FailureEnvironment, FailureInternal} {
-		parsed, ok := FailureClassFromWire(string(class))
+func Test1730_attribution_class_wire_tokens_round_trip(t *testing.T) {
+	for _, class := range []AttributionClass{FailureInput, FailureResource, FailureEnvironment, FailureInternal} {
+		parsed, ok := AttributionClassFromWire(string(class))
 		if !ok || parsed != class {
 			t.Fatalf("wire token %q must round-trip, got (%q, %v)", class, parsed, ok)
 		}
 	}
-	if _, ok := FailureClassFromWire("user-error"); ok {
+	if _, ok := AttributionClassFromWire("user-error"); ok {
 		t.Fatal("unknown token must be rejected")
 	}
-	if _, ok := FailureClassFromWire(""); ok {
+	if _, ok := AttributionClassFromWire(""); ok {
 		t.Fatal("empty token must be rejected")
 	}
 }
@@ -25,7 +25,7 @@ func Test1731_only_input_is_permanent(t *testing.T) {
 	if !FailureInput.IsPermanent() {
 		t.Fatal("input must be permanent")
 	}
-	for _, class := range []FailureClass{FailureResource, FailureEnvironment, FailureInternal} {
+	for _, class := range []AttributionClass{FailureResource, FailureEnvironment, FailureInternal} {
 		if class.IsPermanent() {
 			t.Fatalf("%q must not be permanent", class)
 		}
@@ -39,7 +39,7 @@ func Test1731_only_input_is_permanent(t *testing.T) {
 func Test1901_classified_accessors(t *testing.T) {
 	classified := NewClassifiedError("CONTEXT_OVERFLOW", FailureInput, "prompt too large").
 		WithFailureArgURN("media:enc=utf-8;prompt")
-	if classified.FailureClassOf() != FailureInput {
+	if classified.AttributionClassOf() != FailureInput {
 		t.Fatal("classified error must carry its declared class")
 	}
 	if classified.FailureCode() != "CONTEXT_OVERFLOW" {
@@ -70,7 +70,7 @@ func Test1901_classified_accessors(t *testing.T) {
 	}
 
 	plain := NewExecutionFailedError("boom")
-	if plain.FailureClassOf() != FailureInternal {
+	if plain.AttributionClassOf() != FailureInternal {
 		t.Fatal("unclassified errors are Internal — never a guess")
 	}
 	if plain.FailureCode() != "" {
@@ -89,7 +89,7 @@ func Test1903_wrap_preserves_classification(t *testing.T) {
 	if opErr == nil || opErr.Kind != ErrWrappedClassified {
 		t.Fatalf("expected WrappedClassified, got %+v", wrapped)
 	}
-	if opErr.FailureCode() != "CONTEXT_OVERFLOW" || opErr.FailureClassOf() != FailureInput ||
+	if opErr.FailureCode() != "CONTEXT_OVERFLOW" || opErr.AttributionClassOf() != FailureInput ||
 		opErr.FailureReason() != "prompt too large" {
 		t.Fatalf("identity fields must survive the wrap: %+v", opErr)
 	}
@@ -104,7 +104,7 @@ func Test1903_wrap_preserves_classification(t *testing.T) {
 	if rewrapped == nil || rewrapped.Kind != ErrWrappedClassified {
 		t.Fatalf("expected WrappedClassified after re-wrap, got %+v", rewrapped)
 	}
-	if rewrapped.FailureCode() != "CONTEXT_OVERFLOW" || rewrapped.FailureClassOf() != FailureInput ||
+	if rewrapped.FailureCode() != "CONTEXT_OVERFLOW" || rewrapped.AttributionClassOf() != FailureInput ||
 		rewrapped.FailureReason() != "prompt too large" {
 		t.Fatalf("identity fields must survive re-wrapping: %+v", rewrapped)
 	}

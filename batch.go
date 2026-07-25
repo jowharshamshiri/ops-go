@@ -79,7 +79,7 @@ func (b *BatchOp[T]) Perform(dry *DryContext, wet *WetContext) ([]T, error) {
 				chain := fmt.Sprintf("Op %d-%s failed: %v", index, op.Metadata().Name, err)
 				if opErr != nil && opErr.FailureCode() != "" {
 					wrapped := NewWrappedClassifiedError(
-						chain, opErr.Code, opErr.FailureClassOf(), opErr.FailureReason(),
+						chain, opErr.Code, opErr.AttributionClassOf(), opErr.FailureReason(),
 					)
 					wrapped.ArgURN = opErr.FailureArgURN()
 					return nil, wrapped

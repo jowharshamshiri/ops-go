@@ -41,7 +41,7 @@ type OpError struct {
 	// and ErrWrappedClassified (Message is the wrapping chain; Reason is
 	// the origin's leaf message).
 	Code   string
-	Class  FailureClass
+	Class  AttributionClass
 	Reason string
 	// ArgURN is the media URN of the argument named by the emit source.
 	// Empty means the failure was not attributed to one argument.
@@ -103,14 +103,14 @@ func NewBatchFailedError(msg string) *OpError {
 
 // NewClassifiedError creates an ErrClassified OpError carrying the failure
 // identity declared at the emit source (docs/failure-taxonomy.md).
-func NewClassifiedError(code string, class FailureClass, message string) *OpError {
+func NewClassifiedError(code string, class AttributionClass, message string) *OpError {
 	return &OpError{Kind: ErrClassified, Code: code, Class: class, Message: message, Reason: message}
 }
 
 // NewWrappedClassifiedError creates an ErrWrappedClassified OpError: the
 // chain is the wrapping text for humans; code/class/reason are the origin's,
 // verbatim.
-func NewWrappedClassifiedError(chain string, code string, class FailureClass, reason string) *OpError {
+func NewWrappedClassifiedError(chain string, code string, class AttributionClass, reason string) *OpError {
 	return &OpError{Kind: ErrWrappedClassified, Code: code, Class: class, Message: chain, Reason: reason}
 }
 
@@ -127,11 +127,11 @@ func (e *OpError) WithFailureArgURN(argURN string) *OpError {
 	return e
 }
 
-// FailureClassOf returns the failure class the error DECLARES. Classified
+// AttributionClassOf returns the failure class the error DECLARES. Classified
 // variants carry their origin's declaration; everything else is
 // FailureInternal — unclassified means "ours", never a guess
-// (docs/failure-taxonomy.md). (matches Rust OpError::failure_class)
-func (e *OpError) FailureClassOf() FailureClass {
+// (docs/failure-taxonomy.md). (matches Rust OpError::attribution_class)
+func (e *OpError) AttributionClassOf() AttributionClass {
 	switch e.Kind {
 	case ErrClassified, ErrWrappedClassified:
 		return e.Class
