@@ -1,7 +1,7 @@
 package ops
 
 // The failure taxonomy — WHOSE problem a failure is
-// (docs/failure-taxonomy.md, mirrors Rust ops::AttributionClass).
+// (docs/failure-taxonomy.md, mirrors Rust ops_rs::AttributionClass).
 //
 // Declared at the error's DEFINITION site and carried structurally through
 // every hop; no layer ever infers another layer's class from message text.

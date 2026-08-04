@@ -1,6 +1,6 @@
 module github.com/jowharshamshiri/ops-go
 
-// version: 1.19.99
+// version: 1.20.106
 
 go 1.21
 
