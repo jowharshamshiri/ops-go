@@ -5,7 +5,7 @@ import "testing"
 // TEST1730: the wire vocabulary round-trips exactly and rejects unknowns.
 // (mirrors Rust ops/src/failure.rs TEST1730)
 func Test1730_attribution_class_wire_tokens_round_trip(t *testing.T) {
-	for _, class := range []AttributionClass{FailureInput, FailureResource, FailureEnvironment, FailureInternal} {
+	for _, class := range []AttributionClass{FailureInput, FailureResource, FailureEnvironment, FailureInternal, FailureUser} {
 		parsed, ok := AttributionClassFromWire(string(class))
 		if !ok || parsed != class {
 			t.Fatalf("wire token %q must round-trip, got (%q, %v)", class, parsed, ok)
@@ -19,11 +19,15 @@ func Test1730_attribution_class_wire_tokens_round_trip(t *testing.T) {
 	}
 }
 
-// TEST1731: only Input is permanent — the retry machinery keys on this.
-// (mirrors Rust ops/src/failure.rs TEST1731)
-func Test1731_only_input_is_permanent(t *testing.T) {
+// TEST1731: Input and User are permanent — the retry machinery keys on this
+// (a deterministic input failure, or a human's decision, is never retried
+// automatically). (mirrors Rust ops/src/failure.rs TEST1731)
+func Test1731_only_input_and_user_are_permanent(t *testing.T) {
 	if !FailureInput.IsPermanent() {
 		t.Fatal("input must be permanent")
+	}
+	if !FailureUser.IsPermanent() {
+		t.Fatal("user must be permanent")
 	}
 	for _, class := range []AttributionClass{FailureResource, FailureEnvironment, FailureInternal} {
 		if class.IsPermanent() {

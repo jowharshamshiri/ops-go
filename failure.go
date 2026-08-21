@@ -29,6 +29,10 @@ const (
 	// cartridge. Ours, said plainly. Retryable (races un-race), but never
 	// blamed on the user.
 	FailureInternal AttributionClass = "internal"
+	// FailureUser: the USER decided it — an operator cancelled the run. Not
+	// a failure at all; never retried automatically, never a defect, and the
+	// one class under which "cancelled" is the truth.
+	FailureUser AttributionClass = "user"
 )
 
 // AttributionClassFromWire parses a wire token. Returns false for unknown
@@ -45,15 +49,17 @@ func AttributionClassFromWire(token string) (AttributionClass, bool) {
 		return FailureEnvironment, true
 	case "internal":
 		return FailureInternal, true
+	case "user":
+		return FailureUser, true
 	default:
 		return FailureInternal, false
 	}
 }
 
 // IsPermanent reports whether retrying can NEVER succeed: the failure is a
-// deterministic function of the input. Resource/environment/internal stay
-// retryable (memory frees up, networks recover, races un-race).
-// (matches Rust AttributionClass::is_permanent)
+// deterministic function of the input, or the user chose to end it.
+// Resource/environment/internal stay retryable (memory frees up, networks
+// recover, races un-race). (matches Rust AttributionClass::is_permanent)
 func (c AttributionClass) IsPermanent() bool {
-	return c == FailureInput
+	return c == FailureInput || c == FailureUser
 }
