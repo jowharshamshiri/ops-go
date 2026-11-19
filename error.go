@@ -46,6 +46,10 @@ type OpError struct {
 	// ArgURN is the media URN of the argument named by the emit source.
 	// Empty means the failure was not attributed to one argument.
 	ArgURN string
+	// Hint is the next step the emit source declared for the user (e.g. the
+	// command that installs what is missing). Empty means it declared none;
+	// wrappers carry it verbatim and never supply one.
+	Hint string
 }
 
 // Error implements the error interface.
@@ -127,6 +131,19 @@ func (e *OpError) WithFailureArgURN(argURN string) *OpError {
 	return e
 }
 
+// WithFailureHint declares a classified failure's next step for the user at
+// its emit source. Calling it for an unclassified error is a programmer error.
+func (e *OpError) WithFailureHint(hint string) *OpError {
+	if e.Kind != ErrClassified && e.Kind != ErrWrappedClassified {
+		panic("WithFailureHint requires a classified OpError")
+	}
+	if hint == "" {
+		panic("WithFailureHint requires a non-empty hint")
+	}
+	e.Hint = hint
+	return e
+}
+
 // AttributionClassOf returns the failure class the error DECLARES. Classified
 // variants carry their origin's declaration; everything else is
 // FailureInternal — unclassified means "ours", never a guess
@@ -158,6 +175,18 @@ func (e *OpError) FailureArgURN() string {
 	switch e.Kind {
 	case ErrClassified, ErrWrappedClassified:
 		return e.ArgURN
+	default:
+		return ""
+	}
+}
+
+// FailureHint returns the next step the emit source declared for the user,
+// through any wrapping, or "" when it declared none — never guessed here.
+// (matches Rust OpError::failure_hint)
+func (e *OpError) FailureHint() string {
+	switch e.Kind {
+	case ErrClassified, ErrWrappedClassified:
+		return e.Hint
 	default:
 		return ""
 	}

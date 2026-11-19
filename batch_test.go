@@ -500,3 +500,51 @@ func (o *batchOuterFailOp) Perform(_ *ops.DryContext, _ *ops.WetContext) ([]int,
 func (o *batchOuterFailOp) Metadata() ops.OpMetadata {
 	return ops.NewOpMetadataBuilder("OuterFailOp").Build()
 }
+
+// batchRefusingOp fails with a classified refusal, with or without a hint.
+type batchRefusingOp struct {
+	ops.DefaultRollback
+	hint string
+}
+
+func (o *batchRefusingOp) Perform(_ *ops.DryContext, _ *ops.WetContext) (int, error) {
+	refusal := ops.NewClassifiedError("NO_HANDLER", ops.FailureEnvironment, "cartridge ggufcartridge is not installed")
+	if o.hint != "" {
+		refusal.WithFailureHint(o.hint)
+	}
+	return 0, refusal
+}
+
+func (o *batchRefusingOp) Metadata() ops.OpMetadata {
+	return ops.NewOpMetadataBuilder("RefusingOp").Build()
+}
+
+// TEST1905: a batch whose child fails with a classified refusal carries
+// the child's hint through its own wrap, and through an outer batch;
+// a child that declared none gives the batch no hint.
+// (mirrors Rust ops/src/batch.rs TEST1905)
+func Test1905_batch_carries_child_hint(t *testing.T) {
+	inner := ops.NewBatchOp([]ops.Op[int]{&batchRefusingOp{hint: "capdag cartridge install ggufcartridge"}})
+	outer := ops.NewBatchOp([]ops.Op[[]int]{inner})
+	dry := ops.NewDryContext()
+	wet := ops.NewWetContext()
+
+	_, err := outer.Perform(dry, wet)
+	oe := ops.AsOpError(err)
+	if oe == nil || oe.FailureCode() != "NO_HANDLER" {
+		t.Fatalf("expected the child's NO_HANDLER refusal, got %v", err)
+	}
+	if oe.FailureHint() != "capdag cartridge install ggufcartridge" {
+		t.Fatalf("the child's next step must survive both batch wraps verbatim, got %q", oe.FailureHint())
+	}
+
+	unhinted := ops.NewBatchOp([]ops.Op[int]{&batchRefusingOp{}})
+	_, err = unhinted.Perform(dry, wet)
+	oe = ops.AsOpError(err)
+	if oe == nil || oe.FailureCode() != "NO_HANDLER" {
+		t.Fatalf("expected the child's NO_HANDLER refusal, got %v", err)
+	}
+	if oe.FailureHint() != "" {
+		t.Fatalf("a child that declared no hint gives the batch none, got %q", oe.FailureHint())
+	}
+}

@@ -82,6 +82,7 @@ func (b *BatchOp[T]) Perform(dry *DryContext, wet *WetContext) ([]T, error) {
 						chain, opErr.Code, opErr.AttributionClassOf(), opErr.FailureReason(),
 					)
 					wrapped.ArgURN = opErr.FailureArgURN()
+					wrapped.Hint = opErr.FailureHint()
 					return nil, wrapped
 				}
 				return nil, NewBatchFailedError(chain)

@@ -55,6 +55,7 @@ func WrapNestedOpException(triggerName string, err error) error {
 			opErr.Code, opErr.Class, opErr.Reason,
 		)
 		wrapped.ArgURN = opErr.ArgURN
+		wrapped.Hint = opErr.Hint
 		return wrapped
 	case ErrClassified:
 		wrapped := NewWrappedClassifiedError(
@@ -62,6 +63,7 @@ func WrapNestedOpException(triggerName string, err error) error {
 			opErr.Code, opErr.Class, opErr.Message,
 		)
 		wrapped.ArgURN = opErr.ArgURN
+		wrapped.Hint = opErr.Hint
 		return wrapped
 	case ErrAborted:
 		return NewAbortedError(fmt.Sprintf("Op '%s' aborted: %s", triggerName, opErr.Message))

@@ -1,8 +1,8 @@
 # Go Test Catalog
 
-**Total Tests:** 117
+**Total Tests:** 119
 
-**Numbered Tests:** 117
+**Numbered Tests:** 119
 
 **Unnumbered Tests:** 0
 
@@ -132,12 +132,14 @@ This catalog lists all tests in the Go codebase.
 | test1730 | `Test1730_attribution_class_wire_tokens_round_trip` | TEST1730: the attribution-class wire vocabulary round-trips exactly and rejects unknowns. (mirrors Rust ops/src/failure.rs TEST1730) | failure_test.go:7 |
 | test1731 | `Test1731_only_input_is_permanent` | TEST1731: only Input is permanent — the retry machinery keys on this. (mirrors Rust ops/src/failure.rs TEST1731) | failure_test.go:24 |
 | test1901 | `Test1901_classified_accessors` | TEST1901: classified variants carry the emit source's identity through the accessors; unclassified variants are Internal with no code — the taxonomy's own rule (docs/failure-taxonomy.md). (mirrors Rust ops/src/error.rs TEST1901) | failure_test.go:39 |
-| test1903 | `Test1903_wrap_preserves_classification` | TEST1903: wrapping preserves a classified failure's identity — the wrap enriches the human CHAIN only, never the class/code/reason (docs/failure-taxonomy.md). (mirrors Rust ops/src/ops.rs TEST1903) | failure_test.go:77 |
+| test1903 | `Test1903_wrap_preserves_classification` | TEST1903: wrapping preserves a classified failure's identity — the wrap enriches the human CHAIN only, never the class/code/reason (docs/failure-taxonomy.md). (mirrors Rust ops/src/ops.rs TEST1903) | failure_test.go:94 |
+| test1904 | `Test1904_wrap_carries_hint` | TEST1904: the emit source's hint — its next step for the user — is carried verbatim through wrapping and re-wrapping, and a failure that declared none stays without one: wrapping never supplies a hint. (mirrors Rust ops/src/ops.rs TEST1904) | failure_test.go:130 |
+| test1905 | `Test1905_batch_carries_child_hint` | TEST1905: a batch whose child fails with a classified refusal carries the child's hint through its own wrap, and through an outer batch; a child that declared none gives the batch no hint. (mirrors Rust ops/src/batch.rs TEST1905) | batch_test.go:522 |
 ---
 
 *Generated from Go source tree*
-*Total tests: 117*
-*Total numbered tests: 117*
+*Total tests: 119*
+*Total numbered tests: 119*
 *Total unnumbered tests: 0*
 *Total numbered tests missing descriptions: 0*
 *Total numbering mismatches: 0*

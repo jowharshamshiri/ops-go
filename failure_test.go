@@ -42,7 +42,8 @@ func Test1731_only_input_and_user_are_permanent(t *testing.T) {
 // (mirrors Rust ops/src/error.rs TEST1901)
 func Test1901_classified_accessors(t *testing.T) {
 	classified := NewClassifiedError("CONTEXT_OVERFLOW", FailureInput, "prompt too large").
-		WithFailureArgURN("media:enc=utf-8;prompt")
+		WithFailureArgURN("media:enc=utf-8;prompt").
+		WithFailureHint("shorten the prompt")
 	if classified.AttributionClassOf() != FailureInput {
 		t.Fatal("classified error must carry its declared class")
 	}
@@ -54,6 +55,9 @@ func Test1901_classified_accessors(t *testing.T) {
 	}
 	if classified.FailureArgURN() != "media:enc=utf-8;prompt" {
 		t.Fatal("classified error must carry its declared argument attribution")
+	}
+	if classified.FailureHint() != "shorten the prompt" {
+		t.Fatal("classified error must carry its declared next step")
 	}
 	if classified.Error() != "CONTEXT_OVERFLOW: prompt too large" {
 		t.Fatalf("classified Display mismatch: %q", classified.Error())
@@ -69,6 +73,9 @@ func Test1901_classified_accessors(t *testing.T) {
 	if wrapped.FailureArgURN() != "" {
 		t.Fatal("an unattributed classified error must remain unattributed")
 	}
+	if wrapped.FailureHint() != "" {
+		t.Fatal("no hint declared means none served — never guessed")
+	}
 	if wrapped.Error() != "Op 3-generate failed: CONTEXT_OVERFLOW: prompt too large" {
 		t.Fatalf("wrapped Display keeps the human chain, got %q", wrapped.Error())
 	}
@@ -79,6 +86,9 @@ func Test1901_classified_accessors(t *testing.T) {
 	}
 	if plain.FailureCode() != "" {
 		t.Fatal("unclassified errors carry no code")
+	}
+	if plain.FailureHint() != "" {
+		t.Fatal("unclassified errors carry no hint")
 	}
 }
 
@@ -114,5 +124,28 @@ func Test1903_wrap_preserves_classification(t *testing.T) {
 	}
 	if rewrapped.FailureArgURN() != "media:enc=utf-8;prompt" {
 		t.Fatal("argument attribution must survive re-wrapping")
+	}
+}
+
+// TEST1904: the emit source's hint — its next step for the user — is
+// carried verbatim through wrapping and re-wrapping, and a failure that
+// declared none stays without one: wrapping never supplies a hint.
+// (mirrors Rust ops/src/ops.rs TEST1904)
+func Test1904_wrap_carries_hint(t *testing.T) {
+	refusal := NewClassifiedError("NO_HANDLER", FailureEnvironment, "cartridge ggufcartridge is not installed").
+		WithFailureHint("capdag cartridge install ggufcartridge")
+	wrapped := AsOpError(WrapNestedOpException("PeerCallOp", refusal))
+	if wrapped == nil || wrapped.FailureHint() != "capdag cartridge install ggufcartridge" {
+		t.Fatalf("the origin's next step must survive wrapping verbatim, got %+v", wrapped)
+	}
+	rewrapped := AsOpError(WrapNestedOpException("SummarizeOp", wrapped))
+	if rewrapped == nil || rewrapped.FailureHint() != "capdag cartridge install ggufcartridge" {
+		t.Fatalf("re-wrapping must keep the origin's next step, got %+v", rewrapped)
+	}
+
+	unhinted := NewClassifiedError("NO_HANDLER", FailureEnvironment, "no handler for the cap")
+	rewrapped = AsOpError(WrapNestedOpException("SummarizeOp", WrapNestedOpException("PeerCallOp", unhinted)))
+	if rewrapped == nil || rewrapped.FailureHint() != "" {
+		t.Fatalf("no hint declared means none served through any wrapping, got %+v", rewrapped)
 	}
 }
